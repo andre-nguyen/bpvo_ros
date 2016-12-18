@@ -2,14 +2,20 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bpvo_ros)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -march=native")
 
-find_package(catkin REQUIRED
-  roscpp
-  std_msgs
-  geometry_msgs
-  sensor_msgs
-)
+find_package(catkin_simple REQUIRED)
+catkin_simple()
+
 find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+find_package(PkgConfig)
+find_package(yaml_cpp_catkin QUIET)
+if(${yaml_cpp_catkin_FOUND})
+  message(STATUS "Found yaml_cpp_catkin, using instead of system library.")
+  set(YamlCpp_LIBRARIES ${yaml_cpp_catkin_LIBRARIES})
+  set(YamlCpp_INCLUDE_DIRS ${yaml_cpp_catkin_INCLUDE_DIRS})
+else()
+  message(STATUS "No yaml_cpp_catkin, using yaml-cpp system library instead.")
+  pkg_check_modules(YamlCpp REQUIRED yaml-cpp>=0.5)
+endif()
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -34,23 +40,24 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 #   cfg/DynReconf2.cfg
 # )
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES bpvo_ros
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-)
-
 ###########
 ## Build ##
 ###########
 
 link_directories(/usr/local/lib)
-include_directories(/usr/local/include/bpvo)
+include_directories(/usr/local/include/bpvo ${EIGEN3_INCLUDE_DIR} ${YamlCpp_INCLUDE_DIRS})
 
-add_executable(bpvo_ros_node src/bpvo_ros_node.cpp)
-add_dependencies(bpvo_ros_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+cs_add_library(bpvo_ros src/bpvo_ros.cpp)
+target_link_libraries(bpvo_ros
+ ${catkin_LIBRARIES}
+ ${YamlCpp_LIBRARIES}
+ bpvo
+)
+
+cs_add_executable(bpvo_ros_node src/bpvo_ros_node.cpp)
 target_link_libraries(bpvo_ros_node
  ${catkin_LIBRARIES}
+ ${YamlCpp_LIBRARIES}
  bpvo
+ bpvo_ros
 )

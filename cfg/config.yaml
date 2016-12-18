@@ -1,0 +1,8 @@
+# BPVO expects rectified images so we do not take distortion parameters
+fx: 458.1734982938333
+fy: 458.1734982938333
+cx: 471.5
+cy: 237.5
+image_height: 475
+image_width:  943
+baseline: 0.109956666827   # Baseline [m]

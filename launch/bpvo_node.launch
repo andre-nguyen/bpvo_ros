@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="bpvo_ros" type="bpvo_ros_node" name="bpvo" output="screen">
+    <remap from="image_raw" to="/rect/left/image" />
+    <remap from="disp" to="/dense_stereo/disparity" />
+  </node>
+
+</launch>
